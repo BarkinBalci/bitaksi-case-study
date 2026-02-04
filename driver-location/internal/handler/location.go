@@ -3,7 +3,9 @@ package handler
 import (
 	"net/http"
 
+	"github.com/BarkinBalci/bitaksi-case-study/driver-location/internal/config"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 
 	"github.com/BarkinBalci/bitaksi-case-study/driver-location/internal/dto"
 	"github.com/BarkinBalci/bitaksi-case-study/driver-location/internal/service"
@@ -11,10 +13,11 @@ import (
 
 type LocationHandler struct {
 	service service.Service
+	logger  *zap.Logger
 }
 
-func NewLocationHandler(service service.Service) *LocationHandler {
-	return &LocationHandler{service: service}
+func NewLocationHandler(service service.Service, logger *zap.Logger) *LocationHandler {
+	return &LocationHandler{service: service, logger: logger}
 }
 
 func (h *LocationHandler) RegisterRoutes(r *gin.RouterGroup) {
@@ -31,12 +34,18 @@ func (h *LocationHandler) RegisterRoutes(r *gin.RouterGroup) {
 // @Param request body dto.CreateLocationRequest true "Create location request"
 // @Success 200 {object} dto.LocationResponse
 // @Failure 400 {object} dto.ErrorResponse
+// @Failure 401 {object} dto.ErrorResponse
 // @Failure 500 {object} dto.ErrorResponse
+// @Security ApiKeyAuth
 // @Router /api/v1/locations [post]
 func (h *LocationHandler) createDriverLocation(c *gin.Context) {
 	var req dto.CreateLocationRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
+		h.logger.Error("Failed to bind JSON for createDriverLocation",
+			zap.Error(err),
+			zap.String("path", c.Request.URL.Path),
+		)
 		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
 			Success: false,
 			Error:   err.Error(),
@@ -45,9 +54,14 @@ func (h *LocationHandler) createDriverLocation(c *gin.Context) {
 	}
 
 	if err := h.service.CreateDriverLocation(c.Request.Context(), &req); err != nil {
+		h.logger.Error("Failed to create driver location",
+			zap.Error(err),
+			zap.String("driver_id", req.DriverID),
+			zap.String("path", c.Request.URL.Path),
+		)
 		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
-			Error:   err.Error(),
+			Error:   config.ErrInternalServer,
 		})
 		return
 	}
@@ -69,12 +83,18 @@ func (h *LocationHandler) createDriverLocation(c *gin.Context) {
 // @Param request body dto.CreateLocationBulkRequest true "Create bulk location request"
 // @Success 200 {object} dto.BulkLocationResponse
 // @Failure 400 {object} dto.ErrorResponse
+// @Failure 401 {object} dto.ErrorResponse
 // @Failure 500 {object} dto.ErrorResponse
+// @Security ApiKeyAuth
 // @Router /api/v1/locations/batch [post]
 func (h *LocationHandler) createDriverLocationBulk(c *gin.Context) {
 	var req dto.CreateLocationBulkRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
+		h.logger.Error("Failed to bind JSON for createDriverLocationBulk",
+			zap.Error(err),
+			zap.String("path", c.Request.URL.Path),
+		)
 		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
 			Success: false,
 			Error:   err.Error(),
@@ -84,9 +104,13 @@ func (h *LocationHandler) createDriverLocationBulk(c *gin.Context) {
 
 	result, err := h.service.CreateDriverLocationBulk(c.Request.Context(), &req)
 	if err != nil {
+		h.logger.Error("Failed to create driver locations in bulk",
+			zap.Error(err),
+			zap.String("path", c.Request.URL.Path),
+		)
 		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
-			Error:   err.Error(),
+			Error:   config.ErrInternalServer,
 		})
 		return
 	}
@@ -105,12 +129,19 @@ func (h *LocationHandler) createDriverLocationBulk(c *gin.Context) {
 // @Param request body dto.SearchLocationRequest true "Search location request"
 // @Success 200 {object} dto.SearchLocationResponse
 // @Failure 400 {object} dto.ErrorResponse
+// @Failure 401 {object} dto.ErrorResponse
+// @Failure 404 {object} dto.ErrorResponse
 // @Failure 500 {object} dto.ErrorResponse
+// @Security ApiKeyAuth
 // @Router /api/v1/locations/search [post]
 func (h *LocationHandler) searchDriverLocation(c *gin.Context) {
 	var req dto.SearchLocationRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
+		h.logger.Error("Failed to bind JSON for searchDriverLocation",
+			zap.Error(err),
+			zap.String("path", c.Request.URL.Path),
+		)
 		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
 			Success: false,
 			Error:   err.Error(),
@@ -120,9 +151,14 @@ func (h *LocationHandler) searchDriverLocation(c *gin.Context) {
 
 	drivers, err := h.service.SearchDriverLocation(c.Request.Context(), &req)
 	if err != nil {
+		// TODO: Handle 404 separately
+		h.logger.Error("Failed to search driver locations",
+			zap.Error(err),
+			zap.String("path", c.Request.URL.Path),
+		)
 		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
-			Error:   err.Error(),
+			Error:   config.ErrInternalServer,
 		})
 		return
 	}
