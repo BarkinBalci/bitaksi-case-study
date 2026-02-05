@@ -3,14 +3,18 @@ package handler
 import (
 	"net/http"
 
-	"github.com/BarkinBalci/bitaksi-case-study/driver-location/internal/dto"
 	"github.com/gin-gonic/gin"
+
+	"github.com/BarkinBalci/bitaksi-case-study/driver-location/internal/dto"
+	"github.com/BarkinBalci/bitaksi-case-study/driver-location/internal/service"
 )
 
-type HealthHandler struct{}
+type HealthHandler struct {
+	service service.Service
+}
 
-func NewHealthHandler() *HealthHandler {
-	return &HealthHandler{}
+func NewHealthHandler(service service.Service) *HealthHandler {
+	return &HealthHandler{service: service}
 }
 
 func (h *HealthHandler) RegisterRoutes(r *gin.RouterGroup) {
@@ -24,6 +28,12 @@ func (h *HealthHandler) RegisterRoutes(r *gin.RouterGroup) {
 // @Success 200 {object} dto.HealthCheckResponse
 // @Router /health [get]
 func (h *HealthHandler) healthCheck(c *gin.Context) {
+	if err := h.service.HealthCheck(c.Request.Context()); err != nil {
+		c.JSON(http.StatusServiceUnavailable, dto.HealthCheckResponse{
+			Status: "unavailable",
+		})
+		return
+	}
 	c.JSON(http.StatusOK, dto.HealthCheckResponse{
 		Status: "ok",
 	})

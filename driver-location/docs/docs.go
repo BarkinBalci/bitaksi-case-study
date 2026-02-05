@@ -48,7 +48,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.LocationResponse"
+                            "$ref": "#/definitions/dto.CreateLocationResponse"
                         }
                     },
                     "400": {
@@ -105,7 +105,64 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.BulkLocationResponse"
+                            "$ref": "#/definitions/dto.CreateLocationBulkResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/locations/import": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Imports driver locations from a CSV file.",
+                "consumes": [
+                    "text/csv"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "locations"
+                ],
+                "summary": "Import driver locations from CSV",
+                "parameters": [
+                    {
+                        "description": "CSV data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ImportLocationCSVResponse"
                         }
                     },
                     "400": {
@@ -214,37 +271,9 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "dto.BulkError": {
+        "dto.CreateLocationBulkData": {
             "type": "object",
             "properties": {
-                "driver_id": {
-                    "type": "string"
-                },
-                "error": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.BulkLocationResponse": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "$ref": "#/definitions/dto.BulkResult"
-                },
-                "success": {
-                    "type": "boolean"
-                }
-            }
-        },
-        "dto.BulkResult": {
-            "type": "object",
-            "properties": {
-                "errors": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dto.BulkError"
-                    }
-                },
                 "failed": {
                     "type": "integer"
                 },
@@ -272,17 +301,32 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.CreateLocationBulkResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/dto.CreateLocationBulkData"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "dto.CreateLocationData": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.CreateLocationRequest": {
             "type": "object",
             "required": [
-                "driver_id",
                 "latitude",
                 "longitude"
             ],
             "properties": {
-                "driver_id": {
-                    "type": "string"
-                },
                 "latitude": {
                     "type": "number"
                 },
@@ -291,20 +335,14 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.DriverLocation": {
+        "dto.CreateLocationResponse": {
             "type": "object",
             "properties": {
-                "distance": {
-                    "type": "number"
+                "data": {
+                    "$ref": "#/definitions/dto.CreateLocationData"
                 },
-                "driver_id": {
-                    "type": "string"
-                },
-                "latitude": {
-                    "type": "number"
-                },
-                "longitude": {
-                    "type": "number"
+                "success": {
+                    "type": "boolean"
                 }
             }
         },
@@ -328,22 +366,25 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.LocationData": {
+        "dto.ImportLocationCSVData": {
             "type": "object",
             "properties": {
-                "driver_id": {
-                    "type": "string"
+                "failed": {
+                    "type": "integer"
                 },
-                "message": {
-                    "type": "string"
+                "successful": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
                 }
             }
         },
-        "dto.LocationResponse": {
+        "dto.ImportLocationCSVResponse": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/dto.LocationData"
+                    "$ref": "#/definitions/dto.ImportLocationCSVData"
                 },
                 "success": {
                     "type": "boolean"
@@ -353,10 +394,10 @@ const docTemplate = `{
         "dto.SearchLocationData": {
             "type": "object",
             "properties": {
-                "drivers": {
+                "locations": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dto.DriverLocation"
+                        "$ref": "#/definitions/dto.SearchResultLocation"
                     }
                 },
                 "total": {
@@ -393,6 +434,20 @@ const docTemplate = `{
                 },
                 "success": {
                     "type": "boolean"
+                }
+            }
+        },
+        "dto.SearchResultLocation": {
+            "type": "object",
+            "properties": {
+                "distance": {
+                    "type": "number"
+                },
+                "latitude": {
+                    "type": "number"
+                },
+                "longitude": {
+                    "type": "number"
                 }
             }
         }

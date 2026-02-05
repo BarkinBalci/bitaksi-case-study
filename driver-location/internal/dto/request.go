@@ -1,7 +1,6 @@
 package dto
 
 type CreateLocationRequest struct {
-	DriverID  string  `json:"driver_id" binding:"required"`
 	Latitude  float64 `json:"latitude" binding:"required,latitude"`
 	Longitude float64 `json:"longitude" binding:"required,longitude"`
 }

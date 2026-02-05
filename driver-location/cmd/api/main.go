@@ -10,9 +10,12 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/BarkinBalci/bitaksi-case-study/driver-location/internal/repository"
 	"github.com/gin-gonic/gin"
 	files "github.com/swaggo/files"
 	"github.com/swaggo/gin-swagger"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 	"go.uber.org/zap"
 
 	"github.com/BarkinBalci/bitaksi-case-study/driver-location/docs"
@@ -26,8 +29,10 @@ import (
 // @in header
 // @name X-API-Key
 func main() {
-	cfg := config.LoadConfig()
-	srv := service.NewService()
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		log.Fatal("failed to load config: ", err)
+	}
 
 	// Initialize logger
 	logger, err := middleware.NewLogger(*cfg)
@@ -38,9 +43,34 @@ func main() {
 		_ = logger.Sync()
 	}()
 
+	// Initialize MongoDB connection
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	opts := options.Client().ApplyURI(cfg.MongoURI)
+	mongoClient, err := mongo.Connect(opts)
+	if err != nil {
+		logger.Fatal("failed to connect to MongoDB", zap.Error(err))
+	}
+	defer func() {
+		if err = mongoClient.Disconnect(context.TODO()); err != nil {
+			logger.Error("failed to disconnect from MongoDB", zap.Error(err))
+		}
+	}()
+
+	// Initialize the repository
+	collection := mongoClient.Database(cfg.MongoDBName).Collection(cfg.MongoCollectionName)
+	repo, err := repository.NewDriverLocationRepository(ctx, collection, logger)
+	if err != nil {
+		logger.Fatal("failed to initialize repository", zap.Error(err))
+	}
+
+	// Initialize service
+	srv := service.NewService(repo, logger)
+
 	// Create handlers
 	locationHandler := handler.NewLocationHandler(srv, logger)
-	healthHandler := handler.NewHealthHandler()
+	healthHandler := handler.NewHealthHandler(srv)
 
 	// Create a gin router and attach middlewares
 	router := gin.New()
@@ -84,7 +114,7 @@ func main() {
 	logger.Info("shutting down server...")
 
 	// Inform the server it has 5 seconds to finish the request it is currently handling
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	if err := httpServer.Shutdown(ctx); err != nil {

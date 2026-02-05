@@ -1,24 +1,6 @@
 definitions:
-  dto.BulkError:
+  dto.CreateLocationBulkData:
     properties:
-      driver_id:
-        type: string
-      error:
-        type: string
-    type: object
-  dto.BulkLocationResponse:
-    properties:
-      data:
-        $ref: '#/definitions/dto.BulkResult'
-      success:
-        type: boolean
-    type: object
-  dto.BulkResult:
-    properties:
-      errors:
-        items:
-          $ref: '#/definitions/dto.BulkError'
-        type: array
       failed:
         type: integer
       successful:
@@ -37,29 +19,34 @@ definitions:
     required:
     - locations
     type: object
+  dto.CreateLocationBulkResponse:
+    properties:
+      data:
+        $ref: '#/definitions/dto.CreateLocationBulkData'
+      success:
+        type: boolean
+    type: object
+  dto.CreateLocationData:
+    properties:
+      message:
+        type: string
+    type: object
   dto.CreateLocationRequest:
     properties:
-      driver_id:
-        type: string
       latitude:
         type: number
       longitude:
         type: number
     required:
-    - driver_id
     - latitude
     - longitude
     type: object
-  dto.DriverLocation:
+  dto.CreateLocationResponse:
     properties:
-      distance:
-        type: number
-      driver_id:
-        type: string
-      latitude:
-        type: number
-      longitude:
-        type: number
+      data:
+        $ref: '#/definitions/dto.CreateLocationData'
+      success:
+        type: boolean
     type: object
   dto.ErrorResponse:
     properties:
@@ -74,25 +61,27 @@ definitions:
         example: ok
         type: string
     type: object
-  dto.LocationData:
+  dto.ImportLocationCSVData:
     properties:
-      driver_id:
-        type: string
-      message:
-        type: string
+      failed:
+        type: integer
+      successful:
+        type: integer
+      total:
+        type: integer
     type: object
-  dto.LocationResponse:
+  dto.ImportLocationCSVResponse:
     properties:
       data:
-        $ref: '#/definitions/dto.LocationData'
+        $ref: '#/definitions/dto.ImportLocationCSVData'
       success:
         type: boolean
     type: object
   dto.SearchLocationData:
     properties:
-      drivers:
+      locations:
         items:
-          $ref: '#/definitions/dto.DriverLocation'
+          $ref: '#/definitions/dto.SearchResultLocation'
         type: array
       total:
         type: integer
@@ -119,6 +108,15 @@ definitions:
       success:
         type: boolean
     type: object
+  dto.SearchResultLocation:
+    properties:
+      distance:
+        type: number
+      latitude:
+        type: number
+      longitude:
+        type: number
+    type: object
 info:
   contact: {}
 paths:
@@ -140,7 +138,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.LocationResponse'
+            $ref: '#/definitions/dto.CreateLocationResponse'
         "400":
           description: Bad Request
           schema:
@@ -176,7 +174,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.BulkLocationResponse'
+            $ref: '#/definitions/dto.CreateLocationBulkResponse'
         "400":
           description: Bad Request
           schema:
@@ -192,6 +190,42 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Create driver locations in bulk
+      tags:
+      - locations
+  /api/v1/locations/import:
+    post:
+      consumes:
+      - text/csv
+      description: Imports driver locations from a CSV file.
+      parameters:
+      - description: CSV data
+        in: body
+        name: request
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ImportLocationCSVResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Import driver locations from CSV
       tags:
       - locations
   /api/v1/locations/search:
