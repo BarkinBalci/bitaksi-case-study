@@ -4,12 +4,15 @@ A driver-rider matching system consisting of two microservices.
 [![CI](https://github.com/BarkinBalci/bitaksi-case-study/actions/workflows/ci-driver-location.yml/badge.svg)](https://github.com/BarkinBalci/bitaksi-case-study/actions/workflows/ci-driver-location.yml)
 [![CI](https://github.com/BarkinBalci/bitaksi-case-study/actions/workflows/ci-matching.yml/badge.svg)](https://github.com/BarkinBalci/bitaksi-case-study/actions/workflows/ci-matching.yml)
 
-## Prerequisites
-- Go 1.25+
-- Docker
-- Docker Compose
+## Overview
+**Driver Location Service** stores driver locations in MongoDB using GeoJSON Points with a [2dsphere geospatial index](https://www.mongodb.com/docs/manual/core/indexes/index-types/geospatial/2dsphere/) for proximity searches via [$geoNear aggregation step](https://www.mongodb.com/docs/manual/reference/operator/aggregation/geoNear/). It provides endpoints for location management and radius-based queries. **Matching Service** acts as the client facing API, authenticating riders with JWT and calling the Driver Location Service to find the nearest available driver.
 
 ## Quick Start
+
+### Prerequisites
+- [Go 1.25+](https://go.dev/doc/install)
+- [Docker](https://docs.docker.com/get-started/get-docker/)
+- [Docker Compose](https://docs.docker.com/compose/install)
 
 ### Setting up the environment variables
 
@@ -32,27 +35,85 @@ curl -X POST http://localhost:8080/api/v1/locations/import \
   --data-binary @bootstrap.csv
 ```
 
-## API Documentation
+### Accessing the Swagger UIs
+- Driver Location Service: http://localhost:8080/swagger/index.html
+- Matching Service: http://localhost:8081/swagger/index.html
+
+## Examples
 
 ### Driver Location Service
+All `/api/v1/*` endpoints require an `X-API-Key` header with a valid API key.
 
-Swagger UI: `http://localhost:8080/swagger/index.html`
+#### Create a driver location
+```bash
+curl -X POST http://localhost:8080/api/v1/locations \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: an-api-key" \
+  -d '{
+    "latitude": 41.015137,
+    "longitude": 28.979530
+  }'
+```
 
-**Endpoints:**
-- `POST /api/v1/locations` - Create a driver location
-- `POST /api/v1/locations/bulk` - Bulk create driver locations
-- `POST /api/v1/locations/import` - Import locations from CSV
-- `POST /api/v1/locations/search` - Search locations by coordinates and radius
-- `GET /health` - Health check
+#### Batch create driver locations
+```bash
+curl -X POST http://localhost:8080/api/v1/locations/batch \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: an-api-key" \
+  -d '{
+    "locations": [
+      {
+        "latitude": 41.015137,
+        "longitude": 28.979530
+      },
+      {
+        "latitude": 41.016137,
+        "longitude": 28.980530
+      }
+    ]
+  }'
+```
 
-**Authentication:** Requires `X-API-Key` header for service-to-service communication
+#### Search for nearby drivers
+```bash
+curl -X POST http://localhost:8080/api/v1/locations/search \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: an-api-key" \
+  -d '{
+    "location": {
+      "type": "Point",
+      "coordinates": [28.979530, 41.015137]
+    },
+    "radius": 5000
+  }'
+```
+
+#### Health check
+```bash
+curl http://localhost:8080/health
+```
 
 ### Matching Service
+All `/api/v1/*` endpoints require an Authorization header with a valid JWT Bearer token. 
+A development token is provided in `.env.example` as `DEV_JWT_TOKEN`.
 
-Swagger UI: `http://localhost:8081/swagger/index.html`
+#### Find nearest driver
+```bash
+# Load service .env file
+source matching/.env
 
-**Endpoints:**
-- `POST /api/v1/match` - Find nearest driver for given coordinates
-- `GET /health` - Health check
+curl -X POST http://localhost:8081/api/v1/match \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $DEV_JWT_TOKEN" \
+  -d '{
+    "location": {
+      "type": "Point",
+      "coordinates": [28.979530, 41.015137]
+    }
+  }'
+```
 
-**Authentication:** Requires JWT token with `authenticated: true` in payload
+**Health check:**
+```bash
+curl http://localhost:8081/health
+```
