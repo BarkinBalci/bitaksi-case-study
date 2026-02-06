@@ -5,3 +5,7 @@ const (
 	ErrUnauthorized   = "Unauthorized. You shall not pass!"
 	ErrNotFound       = "Not found."
 )
+
+const (
+	MaxSearchResults = 100
+)

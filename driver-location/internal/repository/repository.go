@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 	"go.uber.org/zap"
 
+	"github.com/BarkinBalci/bitaksi-case-study/driver-location/internal/config"
 	"github.com/BarkinBalci/bitaksi-case-study/driver-location/internal/models"
 )
 
@@ -82,6 +83,7 @@ func (d driverLocationRepository) Search(ctx context.Context, longitude, latitud
 			{Key: "maxDistance", Value: radius},
 			{Key: "spherical", Value: true},
 		}}},
+		{{Key: "$limit", Value: config.MaxSearchResults}},
 	}
 
 	cursor, err := d.collection.Aggregate(ctx, pipeline)
