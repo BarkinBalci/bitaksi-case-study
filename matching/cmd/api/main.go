@@ -68,7 +68,7 @@ func main() {
 
 	// Register private routes
 	v1 := router.Group("/api/v1")
-	// TODO: Implement authentication to private routes
+	v1.Use(middleware.JWTAuthMiddleware(*cfg))
 	matchHandler.RegisterRoutes(v1)
 
 	// Create http server

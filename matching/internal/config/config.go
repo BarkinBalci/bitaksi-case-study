@@ -14,6 +14,7 @@ type Config struct {
 	SwaggerEnabled        bool
 	DriverLocationBaseURL string
 	SearchRadius          int
+	JWTSecret             string
 }
 
 // LoadConfig loads configuration from environment variables.
@@ -41,6 +42,7 @@ func LoadConfig() (*Config, error) {
 		SwaggerEnabled:        parseBool(getEnv("SWAGGER_ENABLED", "true")),
 		DriverLocationBaseURL: getEnv("DRIVER_LOCATION_BASE_URL", "http://localhost:8080"),
 		SearchRadius:          searchRadius,
+		JWTSecret:             getEnv("JWT_SECRET", ""),
 	}
 
 	if len(missing) > 0 {
