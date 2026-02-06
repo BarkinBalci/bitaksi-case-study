@@ -117,3 +117,15 @@ curl -X POST http://localhost:8081/api/v1/match \
 ```bash
 curl http://localhost:8081/health
 ```
+
+## Limitations & Future Enhancements
+
+### Current Limitations
+- Matching Service can be impacted if Driver Location Service is slow or down
+- No retry logic for transient failures
+- No rate limiting or caching layer
+
+### Enhancement Opportunities
+- **Resilience**: Circuit breaker implementation, service mesh, retry with backoff, graceful degradation
+- **Performance**: Redis caching, connection pool tuning, MongoDB replica set, async processing with message queues
+- **Operations**: Integration tests, load testing, observability
