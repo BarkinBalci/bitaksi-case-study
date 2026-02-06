@@ -322,16 +322,14 @@ const docTemplate = `{
         },
         "dto.CreateLocationRequest": {
             "type": "object",
-            "required": [
-                "latitude",
-                "longitude"
-            ],
             "properties": {
                 "latitude": {
-                    "type": "number"
+                    "type": "number",
+                    "example": 41.0082
                 },
                 "longitude": {
-                    "type": "number"
+                    "type": "number",
+                    "example": 28.9784
                 }
             }
         },

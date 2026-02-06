@@ -34,12 +34,11 @@ definitions:
   dto.CreateLocationRequest:
     properties:
       latitude:
+        example: 41.0082
         type: number
       longitude:
+        example: 28.9784
         type: number
-    required:
-    - latitude
-    - longitude
     type: object
   dto.CreateLocationResponse:
     properties:

@@ -6,8 +6,8 @@ type GeoJSONPoint struct {
 }
 
 type CreateLocationRequest struct {
-	Latitude  float64 `json:"latitude" binding:"required,latitude"`
-	Longitude float64 `json:"longitude" binding:"required,longitude"`
+	Latitude  float64 `json:"latitude" binding:"latitude" example:"41.0082"`
+	Longitude float64 `json:"longitude" binding:"longitude" example:"28.9784"`
 }
 
 type CreateLocationBulkRequest struct {
