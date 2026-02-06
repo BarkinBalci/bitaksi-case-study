@@ -55,7 +55,10 @@ func (c *DriverLocationClient) SearchDrivers(ctx context.Context, lat, lon, radi
 		Radius: radius,
 	}
 
-	body, _ := json.Marshal(searchReq)
+	body, err := json.Marshal(searchReq)
+	if err != nil {
+		return nil, err
+	}
 
 	req, err := http.NewRequestWithContext(ctx, "POST", c.baseURL+"/api/v1/locations/search", bytes.NewBuffer(body))
 	if err != nil {

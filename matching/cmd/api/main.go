@@ -55,6 +55,7 @@ func main() {
 	// Create a gin router and attach middlewares
 	router := gin.New()
 	router.Use(middleware.LoggerMiddleware(logger))
+	router.Use(gin.Recovery())
 
 	if cfg.SwaggerEnabled {
 		// Serve Swagger documentation

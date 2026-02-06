@@ -57,7 +57,8 @@ func JWTAuthMiddleware(cfg config.Config) gin.HandlerFunc {
 			return
 		}
 
-		if !token.Valid {
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, dto.ErrorResponse{
 				Success: false,
 				Error:   config.ErrUnauthorized,
@@ -65,21 +66,28 @@ func JWTAuthMiddleware(cfg config.Config) gin.HandlerFunc {
 			return
 		}
 
-		if claims, ok := token.Claims.(jwt.MapClaims); ok {
-			authenticated, exists := claims["authenticated"]
-			if !exists || authenticated != true {
-				c.AbortWithStatusJSON(http.StatusUnauthorized, dto.ErrorResponse{
-					Success: false,
-					Error:   config.ErrUnauthorized,
-				})
-				return
-			}
-
-			if userID, exists := claims["user_id"]; exists {
-				c.Set("user_id", userID)
-			}
-			c.Set("authenticated", authenticated)
+		authenticatedVal, exists := claims["authenticated"]
+		if !exists {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, dto.ErrorResponse{
+				Success: false,
+				Error:   config.ErrUnauthorized,
+			})
+			return
 		}
+
+		authenticated, ok := authenticatedVal.(bool)
+		if !ok || !authenticated {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, dto.ErrorResponse{
+				Success: false,
+				Error:   config.ErrUnauthorized,
+			})
+			return
+		}
+
+		if userID, exists := claims["user_id"]; exists {
+			c.Set("user_id", userID)
+		}
+		c.Set("authenticated", authenticated)
 
 		c.Next()
 	}
