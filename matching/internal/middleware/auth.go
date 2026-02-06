@@ -66,12 +66,19 @@ func JWTAuthMiddleware(cfg config.Config) gin.HandlerFunc {
 		}
 
 		if claims, ok := token.Claims.(jwt.MapClaims); ok {
+			authenticated, exists := claims["authenticated"]
+			if !exists || authenticated != true {
+				c.AbortWithStatusJSON(http.StatusUnauthorized, dto.ErrorResponse{
+					Success: false,
+					Error:   config.ErrUnauthorized,
+				})
+				return
+			}
+
 			if userID, exists := claims["user_id"]; exists {
 				c.Set("user_id", userID)
 			}
-			if authenticated, exists := claims["authenticated"]; exists {
-				c.Set("authenticated", authenticated)
-			}
+			c.Set("authenticated", authenticated)
 		}
 
 		c.Next()
