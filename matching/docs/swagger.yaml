@@ -1,0 +1,115 @@
+definitions:
+  dto.DriverMatch:
+    properties:
+      distance:
+        type: number
+      id:
+        type: string
+      location:
+        $ref: '#/definitions/dto.GeoJSONPoint'
+    type: object
+  dto.ErrorResponse:
+    properties:
+      error:
+        type: string
+      success:
+        type: boolean
+    type: object
+  dto.GeoJSONPoint:
+    properties:
+      coordinates:
+        example:
+        - 28.9784
+        - 41.0082
+        items:
+          type: number
+        type: array
+      type:
+        example: Point
+        type: string
+    required:
+    - coordinates
+    - type
+    type: object
+  dto.HealthCheckResponse:
+    properties:
+      status:
+        example: ok
+        type: string
+    type: object
+  dto.MatchRequest:
+    properties:
+      location:
+        $ref: '#/definitions/dto.GeoJSONPoint'
+    required:
+    - location
+    type: object
+  dto.MatchResponse:
+    properties:
+      data:
+        $ref: '#/definitions/dto.DriverMatch'
+      success:
+        type: boolean
+    type: object
+info:
+  contact: {}
+paths:
+  /api/v1/match:
+    post:
+      consumes:
+      - application/json
+      description: Finds the nearest available driver for the given rider location
+      parameters:
+      - description: Match request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.MatchRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.MatchResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Find nearest driver
+      tags:
+      - match
+  /health:
+    get:
+      description: Check if the service is healthy
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.HealthCheckResponse'
+      summary: Check if the service is healthy
+      tags:
+      - health
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
