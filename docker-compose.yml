@@ -1,0 +1,48 @@
+services:
+  driver-location:
+    container_name: driver-location-api
+    build:
+      context: driver-location
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    networks:
+      - main-network
+    env_file:
+      - path: driver-location/.env
+        required: true
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017
+
+  matching:
+    container_name: matching-api
+    build:
+      context: matching
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8080"
+    networks:
+      - main-network
+    env_file:
+      - path: matching/.env
+        required: true
+    environment:
+      - DRIVER_LOCATION_BASE_URL=http://driver-location:8080
+
+  mongodb:
+    container_name: mongodb
+    image: mongo:8.2.4
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+    networks:
+      - main-network
+
+volumes:
+  mongodb-data:
+    driver: local
+
+networks:
+  main-network:
+    driver: bridge

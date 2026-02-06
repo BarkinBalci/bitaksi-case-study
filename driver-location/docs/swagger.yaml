@@ -1,0 +1,301 @@
+definitions:
+  dto.CreateLocationBulkData:
+    properties:
+      failed:
+        type: integer
+      successful:
+        type: integer
+      total:
+        type: integer
+    type: object
+  dto.CreateLocationBulkRequest:
+    properties:
+      locations:
+        items:
+          $ref: '#/definitions/dto.CreateLocationRequest'
+        maxItems: 1000
+        minItems: 1
+        type: array
+    required:
+    - locations
+    type: object
+  dto.CreateLocationBulkResponse:
+    properties:
+      data:
+        $ref: '#/definitions/dto.CreateLocationBulkData'
+      success:
+        type: boolean
+    type: object
+  dto.CreateLocationData:
+    properties:
+      message:
+        type: string
+    type: object
+  dto.CreateLocationRequest:
+    properties:
+      latitude:
+        example: 41.0082
+        type: number
+      longitude:
+        example: 28.9784
+        type: number
+    type: object
+  dto.CreateLocationResponse:
+    properties:
+      data:
+        $ref: '#/definitions/dto.CreateLocationData'
+      success:
+        type: boolean
+    type: object
+  dto.ErrorResponse:
+    properties:
+      error:
+        type: string
+      success:
+        type: boolean
+    type: object
+  dto.GeoJSONPoint:
+    properties:
+      coordinates:
+        example:
+        - 28.9784
+        - 41.0082
+        items:
+          type: number
+        type: array
+      type:
+        example: Point
+        type: string
+    required:
+    - coordinates
+    - type
+    type: object
+  dto.HealthCheckResponse:
+    properties:
+      status:
+        example: ok
+        type: string
+    type: object
+  dto.ImportLocationCSVData:
+    properties:
+      failed:
+        type: integer
+      successful:
+        type: integer
+      total:
+        type: integer
+    type: object
+  dto.ImportLocationCSVResponse:
+    properties:
+      data:
+        $ref: '#/definitions/dto.ImportLocationCSVData'
+      success:
+        type: boolean
+    type: object
+  dto.SearchLocationData:
+    properties:
+      locations:
+        items:
+          $ref: '#/definitions/dto.SearchResultLocation'
+        type: array
+      total:
+        type: integer
+    type: object
+  dto.SearchLocationRequest:
+    properties:
+      location:
+        $ref: '#/definitions/dto.GeoJSONPoint'
+      radius:
+        maximum: 10000
+        minimum: 10
+        type: number
+    required:
+    - location
+    - radius
+    type: object
+  dto.SearchLocationResponse:
+    properties:
+      data:
+        $ref: '#/definitions/dto.SearchLocationData'
+      success:
+        type: boolean
+    type: object
+  dto.SearchResultLocation:
+    properties:
+      distance:
+        type: number
+      id:
+        type: string
+      location:
+        $ref: '#/definitions/dto.GeoJSONPoint'
+    type: object
+info:
+  contact: {}
+paths:
+  /api/v1/locations:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new driver location
+      parameters:
+      - description: Create location request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateLocationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.CreateLocationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a new driver location
+      tags:
+      - locations
+  /api/v1/locations/batch:
+    post:
+      consumes:
+      - application/json
+      description: Creates multiple driver locations at once
+      parameters:
+      - description: Create bulk location request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateLocationBulkRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.CreateLocationBulkResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create driver locations in bulk
+      tags:
+      - locations
+  /api/v1/locations/import:
+    post:
+      consumes:
+      - text/csv
+      description: Imports driver locations from a CSV file.
+      parameters:
+      - description: CSV data
+        in: body
+        name: request
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ImportLocationCSVResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Import driver locations from CSV
+      tags:
+      - locations
+  /api/v1/locations/search:
+    post:
+      consumes:
+      - application/json
+      description: Searches for driver locations based on a GeoJSON point and radius
+      parameters:
+      - description: Search location request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.SearchLocationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.SearchLocationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Search for driver locations
+      tags:
+      - locations
+  /health:
+    get:
+      description: Check if the service is healthy
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.HealthCheckResponse'
+      summary: Check if the service is healthy
+      tags:
+      - health
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: X-API-Key
+    type: apiKey
+swagger: "2.0"
