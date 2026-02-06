@@ -40,9 +40,9 @@ type SearchLocationData struct {
 }
 
 type SearchResultLocation struct {
-	Latitude  float64 `json:"latitude"`
-	Longitude float64 `json:"longitude"`
-	Distance  float64 `json:"distance"`
+	ID       string       `json:"id"`
+	Location GeoJSONPoint `json:"location"`
+	Distance float64      `json:"distance"`
 }
 
 type ImportLocationCSVResponse struct {

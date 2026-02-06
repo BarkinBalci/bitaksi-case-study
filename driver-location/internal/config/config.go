@@ -10,7 +10,6 @@ import (
 type Config struct {
 	ApiKey              string
 	Environment         string
-	ServerPort          string
 	SwaggerEnabled      bool
 	MongoURI            string
 	MongoDBName         string
@@ -34,7 +33,6 @@ func LoadConfig() (*Config, error) {
 	cfg := &Config{
 		ApiKey:              getEnv("X_API_KEY", ""),
 		Environment:         getEnv("ENVIRONMENT", "development"),
-		ServerPort:          getEnv("SERVER_PORT", "8080"),
 		SwaggerEnabled:      parseBool(getEnv("SWAGGER_ENABLED", "true")),
 		MongoURI:            getEnv("MONGO_URI", ""),
 		MongoDBName:         getEnv("MONGO_DB_NAME", ""),

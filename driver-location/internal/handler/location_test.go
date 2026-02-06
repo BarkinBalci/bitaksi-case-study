@@ -245,9 +245,11 @@ func TestLocationHandler_SearchDriverLocation(t *testing.T) {
 		{
 			name: "success - found results",
 			requestBody: dto.SearchLocationRequest{
-				Latitude:  41.0,
-				Longitude: 29.0,
-				Radius:    10.0,
+				Location: dto.GeoJSONPoint{
+					Type:        "Point",
+					Coordinates: []float64{29.0, 41.0},
+				},
+				Radius: 10.0,
 			},
 			mockSetup: func(m *MockService) {
 				expectedResults := []*models.SearchResult{
@@ -266,9 +268,11 @@ func TestLocationHandler_SearchDriverLocation(t *testing.T) {
 		{
 			name: "not found - no results",
 			requestBody: dto.SearchLocationRequest{
-				Latitude:  41.0,
-				Longitude: 29.0,
-				Radius:    10.0,
+				Location: dto.GeoJSONPoint{
+					Type:        "Point",
+					Coordinates: []float64{29.0, 41.0},
+				},
+				Radius: 10.0,
 			},
 			mockSetup: func(m *MockService) {
 				m.On("SearchDriverLocation", mock.Anything, 41.0, 29.0, 10.0).Return([]*models.SearchResult{}, nil)

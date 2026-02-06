@@ -1,12 +1,15 @@
 package models
 
+import "go.mongodb.org/mongo-driver/v2/bson"
+
 type GeoJSON struct {
 	Type        string    `bson:"type"`
 	Coordinates []float64 `bson:"coordinates"`
 }
 
 type DriverLocation struct {
-	Location GeoJSON `bson:"location"`
+	ID       bson.ObjectID `bson:"_id,omitempty"`
+	Location GeoJSON       `bson:"location"`
 }
 
 func NewDriverLocation(lat, lon float64) *DriverLocation {

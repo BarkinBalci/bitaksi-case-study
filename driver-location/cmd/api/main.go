@@ -29,6 +29,7 @@ import (
 // @in header
 // @name X-API-Key
 func main() {
+	// Load configuration
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		log.Fatal("failed to load config: ", err)
@@ -94,7 +95,7 @@ func main() {
 
 	// Create http server
 	httpServer := &http.Server{
-		Addr:              ":" + cfg.ServerPort,
+		Addr:              ":8080",
 		Handler:           router,
 		ReadHeaderTimeout: 5 * time.Second,
 	}

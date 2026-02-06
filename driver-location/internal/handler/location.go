@@ -150,7 +150,9 @@ func (h *LocationHandler) searchDriverLocation(c *gin.Context) {
 		return
 	}
 
-	searchResult, err := h.service.SearchDriverLocation(c.Request.Context(), req.Latitude, req.Longitude, req.Radius)
+	lon := req.Location.Coordinates[0]
+	lat := req.Location.Coordinates[1]
+	searchResult, err := h.service.SearchDriverLocation(c.Request.Context(), lat, lon, req.Radius)
 	if err != nil {
 		h.logger.Error("Failed to search driver locations",
 			zap.Error(err),
@@ -173,9 +175,12 @@ func (h *LocationHandler) searchDriverLocation(c *gin.Context) {
 	drivers := make([]dto.SearchResultLocation, len(searchResult))
 	for i, e := range searchResult {
 		drivers[i] = dto.SearchResultLocation{
-			Latitude:  e.Latitude,
-			Longitude: e.Longitude,
-			Distance:  e.Distance,
+			ID: e.DriverID,
+			Location: dto.GeoJSONPoint{
+				Type:        "Point",
+				Coordinates: []float64{e.Longitude, e.Latitude},
+			},
+			Distance: e.Distance,
 		}
 	}
 

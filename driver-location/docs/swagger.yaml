@@ -55,6 +55,22 @@ definitions:
       success:
         type: boolean
     type: object
+  dto.GeoJSONPoint:
+    properties:
+      coordinates:
+        example:
+        - 28.9784
+        - 41.0082
+        items:
+          type: number
+        type: array
+      type:
+        example: Point
+        type: string
+    required:
+    - coordinates
+    - type
+    type: object
   dto.HealthCheckResponse:
     properties:
       status:
@@ -88,17 +104,14 @@ definitions:
     type: object
   dto.SearchLocationRequest:
     properties:
-      latitude:
-        type: number
-      longitude:
-        type: number
+      location:
+        $ref: '#/definitions/dto.GeoJSONPoint'
       radius:
-        maximum: 50
-        minimum: 0.1
+        maximum: 10000
+        minimum: 10
         type: number
     required:
-    - latitude
-    - longitude
+    - location
     - radius
     type: object
   dto.SearchLocationResponse:
@@ -112,10 +125,10 @@ definitions:
     properties:
       distance:
         type: number
-      latitude:
-        type: number
-      longitude:
-        type: number
+      id:
+        type: string
+      location:
+        $ref: '#/definitions/dto.GeoJSONPoint'
     type: object
 info:
   contact: {}

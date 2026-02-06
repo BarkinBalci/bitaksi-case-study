@@ -95,6 +95,7 @@ func (d driverLocationRepository) Search(ctx context.Context, longitude, latitud
 	}()
 
 	var results []struct {
+		ID       bson.ObjectID  `bson:"_id"`
 		Location models.GeoJSON `bson:"location"`
 		Distance float64        `bson:"distance"`
 	}
@@ -106,6 +107,7 @@ func (d driverLocationRepository) Search(ctx context.Context, longitude, latitud
 	searchResults := make([]*models.SearchResult, len(results))
 	for i, r := range results {
 		searchResults[i] = &models.SearchResult{
+			DriverID:  r.ID.Hex(),
 			Latitude:  r.Location.Coordinates[1],
 			Longitude: r.Location.Coordinates[0],
 			Distance:  r.Distance,

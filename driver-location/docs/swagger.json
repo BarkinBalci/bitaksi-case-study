@@ -346,6 +346,29 @@
                 }
             }
         },
+        "dto.GeoJSONPoint": {
+            "type": "object",
+            "required": [
+                "coordinates",
+                "type"
+            ],
+            "properties": {
+                "coordinates": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    },
+                    "example": [
+                        28.9784,
+                        41.0082
+                    ]
+                },
+                "type": {
+                    "type": "string",
+                    "example": "Point"
+                }
+            }
+        },
         "dto.HealthCheckResponse": {
             "type": "object",
             "properties": {
@@ -397,21 +420,17 @@
         "dto.SearchLocationRequest": {
             "type": "object",
             "required": [
-                "latitude",
-                "longitude",
+                "location",
                 "radius"
             ],
             "properties": {
-                "latitude": {
-                    "type": "number"
-                },
-                "longitude": {
-                    "type": "number"
+                "location": {
+                    "$ref": "#/definitions/dto.GeoJSONPoint"
                 },
                 "radius": {
                     "type": "number",
-                    "maximum": 50,
-                    "minimum": 0.1
+                    "maximum": 10000,
+                    "minimum": 10
                 }
             }
         },
@@ -432,11 +451,11 @@
                 "distance": {
                     "type": "number"
                 },
-                "latitude": {
-                    "type": "number"
+                "id": {
+                    "type": "string"
                 },
-                "longitude": {
-                    "type": "number"
+                "location": {
+                    "$ref": "#/definitions/dto.GeoJSONPoint"
                 }
             }
         }
